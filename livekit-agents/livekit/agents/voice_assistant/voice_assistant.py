@@ -546,13 +546,9 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
         copied_ctx.messages.append(
             ChatMessage.create(text=handle.user_question, role="user")
         )
+        logger.info(f"copied_ctx: {copied_ctx}")
 
         llm_stream = self._opts.before_llm_cb(self, copied_ctx)
-        # log the llm stream
-        logger.info(f"llm_stream: {llm_stream}")
-        if llm_stream is False:
-            return
-
         if asyncio.iscoroutine(llm_stream):
             llm_stream = await llm_stream
 
