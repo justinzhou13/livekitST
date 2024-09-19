@@ -98,6 +98,7 @@ class _ImplOptions:
     before_tts_cb: BeforeTTSCallback
     plotting: bool
     transcription: AssistantTranscriptionOptions
+    auto_reply: bool
 
 
 @dataclass(frozen=True)
@@ -145,6 +146,7 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
         before_tts_cb: BeforeTTSCallback = _default_before_tts_cb,
         plotting: bool = False,
         loop: asyncio.AbstractEventLoop | None = None,
+        auto_reply: bool = True,
         # backward compatibility
         will_synthesize_assistant_reply: WillSynthesizeAssistantReply | None = None,
     ) -> None:
@@ -177,6 +179,7 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
                 (e.g: editing the pronunciation of a word).
             plotting: Whether to enable plotting for debugging. matplotlib must be installed.
             loop: Event loop to use. Default to asyncio.get_event_loop().
+            auto_reply: Whether to automatically reply to user input.
             testing this is working
         """
         super().__init__()
@@ -198,6 +201,7 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
             transcription=transcription,
             before_llm_cb=before_llm_cb,
             before_tts_cb=before_tts_cb,
+            auto_reply=auto_reply,
         )
         self._plotter = AssistantPlotter(self._loop)
 
@@ -320,6 +324,7 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
                 - agent_speech_interrupted: the agent speech was interrupted
                 - function_calls_collected: received the complete set of functions to be executed
                 - function_calls_finished: all function calls have been completed
+                - user_final_transcript: the user final transcript came through
             callback: the callback to call when the event is emitted
         """
         return super().on(event, callback)
@@ -435,6 +440,7 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
                 " " if self._transcribed_text else ""
             ) + new_transcript
 
+            self.emit("user_final_transcript", self._transcribed_text)
             if self._opts.preemptive_synthesis:
                 self._synthesize_agent_reply()
 
@@ -504,6 +510,9 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
     def _synthesize_agent_reply(self) -> None:
         """Synthesize the agent reply to the user question, also make sure only one reply
         is synthesized/played at a time"""
+
+        if not self._opts.auto_reply:
+            return
 
         if self._pending_agent_reply is not None:
             self._pending_agent_reply.interrupt()
@@ -779,6 +788,9 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
 
     def _validate_reply_if_possible(self) -> None:
         """Check if the new agent speech should be played"""
+
+        if not self._opts.auto_reply:
+            return
 
         if self._pending_agent_reply is None:
             if self._opts.preemptive_synthesis or not self._transcribed_text:
