@@ -177,6 +177,7 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
                 (e.g: editing the pronunciation of a word).
             plotting: Whether to enable plotting for debugging. matplotlib must be installed.
             loop: Event loop to use. Default to asyncio.get_event_loop().
+            testing this is working
         """
         super().__init__()
         self._loop = loop or asyncio.get_event_loop()
