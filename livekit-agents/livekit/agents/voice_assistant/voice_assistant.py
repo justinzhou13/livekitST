@@ -548,6 +548,8 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
         )
 
         llm_stream = self._opts.before_llm_cb(self, copied_ctx)
+        # log the llm stream
+        logger.info(f"llm_stream: {llm_stream}")
         if llm_stream is False:
             return
 
