@@ -440,11 +440,12 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
                 " " if self._transcribed_text else ""
             ) + new_transcript
 
-            self.emit("user_final_transcript", self._transcribed_text)
             if self._opts.preemptive_synthesis:
                 self._synthesize_agent_reply()
 
             self._deferred_validation.on_human_final_transcript(new_transcript)
+            self.emit("user_final_transcript", self._transcribed_text)
+            self._transcribed_text = ""
 
             words = self._opts.transcription.word_tokenizer.tokenize(
                 text=new_transcript
