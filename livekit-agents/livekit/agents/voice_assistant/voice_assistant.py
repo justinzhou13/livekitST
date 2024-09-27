@@ -32,6 +32,7 @@ BeforeTTSCallback = Callable[
 
 
 EventTypes = Literal[
+    "synthesis_output",
     "user_started_speaking",
     "user_stopped_speaking",
     "agent_started_speaking",
@@ -776,7 +777,7 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
         if tts_source is None:
             logger.error("before_tts_cb must return str or AsyncIterable[str]")
 
-        return self._agent_output.synthesize(
+        handle = self._agent_output.synthesize(
             speech_id=speech_id,
             tts_source=tts_source,
             transcript_source=transcript_source,
@@ -786,6 +787,8 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
             word_tokenizer=self._opts.transcription.word_tokenizer,
             hyphenate_word=self._opts.transcription.hyphenate_word,
         )
+        handle.tts_forwarder.on("synthesis_output", lambda text: self.emit("synthesis_output", text))
+        return handle
 
     def _validate_reply_if_possible(self) -> None:
         """Check if the new agent speech should be played"""

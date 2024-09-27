@@ -4,7 +4,7 @@ import asyncio
 import contextlib
 import time
 from dataclasses import dataclass
-from typing import Awaitable, Callable, Optional, Union
+from typing import Awaitable, Callable, Optional, Union, Literal
 
 from livekit import rtc
 from livekit.rtc.participant import PublishTranscriptionError
@@ -63,7 +63,7 @@ class _TextData:
     forwarded_sentences: int = 0
 
 
-class TTSSegmentsForwarder:
+class TTSSegmentsForwarder(utils.EventEmitter[Literal["synthesis_output"]]):
     """
     Forward TTS transcription to the users. This class tries to imitate the right timing of
     speech with the synthesized text. The first estimation is based on the speed argument. Once
@@ -196,6 +196,7 @@ class TTSSegmentsForwarder:
                 sentence_stream=self._opts.sentence_tokenizer.stream()
             )
             self._text_q.append(self._text_data)
+            self.emit("synthesis_output", text)
             self._text_q_changed.set()
 
         self._text_data.pushed_text += text
