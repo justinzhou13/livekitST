@@ -104,6 +104,7 @@ class TTSSegmentsForwarder(utils.EventEmitter[Literal["synthesis_output"]]):
             hyphenate_word: function that returns a list of hyphens for a given word
 
         """
+        super().__init__()
         identity = participant if isinstance(participant, str) else participant.identity
 
         if track is None:
