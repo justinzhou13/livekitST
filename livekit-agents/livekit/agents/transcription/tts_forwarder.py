@@ -197,9 +197,10 @@ class TTSSegmentsForwarder(utils.EventEmitter[Literal["synthesis_output"]]):
                 sentence_stream=self._opts.sentence_tokenizer.stream()
             )
             self._text_q.append(self._text_data)
-            self.emit("synthesis_output", text)
             self._text_q_changed.set()
 
+        print("push_text", text)
+        self.emit("synthesis_output", text)
         self._text_data.pushed_text += text
         self._text_data.sentence_stream.push_text(text)
 
