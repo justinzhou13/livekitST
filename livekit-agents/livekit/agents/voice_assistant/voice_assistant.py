@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import contextvars
 import time
+import uuid
 from dataclasses import dataclass
 from typing import Any, AsyncIterable, Awaitable, Callable, Literal, Optional, Union
 
@@ -780,6 +781,7 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
         if tts_source is None:
             logger.error("before_tts_cb must return str or AsyncIterable[str]")
 
+        message_uuid = str(uuid.uuid4())
         handle = self._agent_output.synthesize(
             speech_id=speech_id,
             tts_source=tts_source,
@@ -790,7 +792,7 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
             word_tokenizer=self._opts.transcription.word_tokenizer,
             hyphenate_word=self._opts.transcription.hyphenate_word,
         )
-        handle.tts_forwarder.on("synthesis_output", lambda text: self.emit("synthesis_output", text, handle.uuid))  # Emit UUID
+        handle.tts_forwarder.on("synthesis_output", lambda text: self.emit("synthesis_output", text, message_uuid))  # Emit UUID
         return handle
 
     def _validate_reply_if_possible(self) -> None:
