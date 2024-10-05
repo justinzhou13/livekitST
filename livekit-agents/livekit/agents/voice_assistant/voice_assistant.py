@@ -790,7 +790,7 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
             word_tokenizer=self._opts.transcription.word_tokenizer,
             hyphenate_word=self._opts.transcription.hyphenate_word,
         )
-        handle.tts_forwarder.on("synthesis_output", lambda text: self.emit("synthesis_output", text))
+        handle.tts_forwarder.on("synthesis_output", lambda text: self.emit("synthesis_output", text, handle.uuid))  # Emit UUID
         return handle
 
     def _validate_reply_if_possible(self) -> None:
