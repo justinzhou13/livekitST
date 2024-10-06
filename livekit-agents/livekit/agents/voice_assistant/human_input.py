@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Literal
+from typing import Literal, Callable
 
 from livekit import rtc
 
@@ -28,6 +28,7 @@ class HumanInput(utils.EventEmitter[EventTypes]):
         stt: speech_to_text.STT,
         participant: rtc.RemoteParticipant,
         transcription: bool,
+        is_muted: Callable[[], bool] | None = None,
     ) -> None:
         super().__init__()
         self._room, self._vad, self._stt, self._participant, self._transcription = (
@@ -43,6 +44,7 @@ class HumanInput(utils.EventEmitter[EventTypes]):
         self._closed = False
         self._speaking = False
         self._speech_probability = 0.0
+        self._is_muted = is_muted
 
         self._room.on("track_published", self._subscribe_to_microphone)
         self._room.on("track_subscribed", self._subscribe_to_microphone)
@@ -119,6 +121,9 @@ class HumanInput(utils.EventEmitter[EventTypes]):
         async def _audio_stream_co() -> None:
             # forward the audio stream to the VAD and STT streams
             async for ev in audio_stream:
+                if self._is_muted and self._is_muted():
+                    continue
+
                 stt_stream.push_frame(ev.frame)
                 vad_stream.push_frame(ev.frame)
 

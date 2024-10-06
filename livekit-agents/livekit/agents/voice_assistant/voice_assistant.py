@@ -255,6 +255,24 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
 
         self._update_state_task: asyncio.Task | None = None
 
+        self._muted = False
+
+    def mute(self) -> None:
+        """Mute the VoiceAssistant. No audio will be forwarded to STT or VAD."""
+        if not self._muted:
+            self._muted = True
+            logger.info("VoiceAssistant muted")
+
+    def unmute(self) -> None:
+        """Unmute the VoiceAssistant. Audio forwarding is resumed."""
+        if self._muted:
+            self._muted = False
+            logger.info("VoiceAssistant unmuted")
+
+    def is_muted(self) -> bool:
+        """Check if the VoiceAssistant is muted."""
+        return self._muted
+
     @property
     def fnc_ctx(self) -> FunctionContext | None:
         return self._fnc_ctx
@@ -399,6 +417,7 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
             stt=self._stt,
             participant=participant,
             transcription=self._opts.transcription.user_transcription,
+            is_muted=self._muted,
         )
 
         def _on_start_of_speech(ev: vad.VADEvent) -> None:
