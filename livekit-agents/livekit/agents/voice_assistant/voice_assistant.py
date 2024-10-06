@@ -417,7 +417,7 @@ class VoiceAssistant(utils.EventEmitter[EventTypes]):
             stt=self._stt,
             participant=participant,
             transcription=self._opts.transcription.user_transcription,
-            is_muted=self._muted,
+            is_muted=self.is_muted,
         )
 
         def _on_start_of_speech(ev: vad.VADEvent) -> None:

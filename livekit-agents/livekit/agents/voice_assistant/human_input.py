@@ -120,15 +120,10 @@ class HumanInput(utils.EventEmitter[EventTypes]):
 
         async def _audio_stream_co() -> None:
             # forward the audio stream to the VAD and STT streams
-            async for ev in audio_stream:
-                print()
-                print()
-                print(self._is_muted)
-                print(self._is_muted())
+            async for ev in audio_stream:               
                 if self._is_muted and self._is_muted():
                     continue
 
-                print("pushing frame")
                 stt_stream.push_frame(ev.frame)
                 vad_stream.push_frame(ev.frame)
 
